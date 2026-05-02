@@ -1,187 +1,185 @@
-I couldn’t directly extract full structured details from your repo via search (GitHub blocks full scraping), but based on:
+<div align="center">
 
-* your shared repo: AEO-project GitHub Repository
-* your screenshot + folder structure
-* your project context (LLMs + diagnostic tool + frontend + backend)
+# 🤖✨ AEO Project
+### *Answer Engine Optimization — because SEO is so last decade*
 
-I **reconstructed a high-quality, recruiter-level README** tailored to your actual implementation.
+![Python](https://img.shields.io/badge/Python-63%25-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-35%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-Bundler-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
----
+> 🧠 *"If your brand isn't showing up in AI answers, does it even exist?"*
 
-# 🚀 README.md (Copy this directly)
-
-```markdown
-# 🧠 pixiiAI – AEO Diagnostic Tool
-
-An AI-powered **AEO (Answer Engine Optimization) Diagnostic Tool** that analyzes how different LLMs mention brands, rank visibility, and identify competitors across generated responses.
-
-This project is designed to simulate **real-world AI search behavior** (ChatGPT, Claude, etc.) and provide **actionable insights for businesses and administrators**.
+</div>
 
 ---
 
-## 🔥 Problem Statement
+## 🌟 What is this?
 
-Traditional SEO is evolving → AI models now generate answers instead of just ranking links.
-
-👉 Businesses need to understand:
-- How often their brand appears in AI responses
-- Where they rank in generated answers
-- Who their competitors are in AI-generated content
-
----
-
-## ⚡ Solution
-
-pixiiAI runs multiple LLM queries and:
-- Parses responses
-- Extracts brand mentions
-- Computes visibility scores
-- Identifies competitors
-- Generates structured reports
-
----
-
-## 🏗️ Architecture
+**AEO Project** is a full-stack AI-powered tool that helps you understand how your brand is perceived by **Large Language Models** (LLMs). Think of it as SEO, but for the AI era — tracking how often, where, and alongside whom your brand appears in AI-generated responses.
 
 ```
-
-Frontend (React + Vite)
-↓
-Backend (Python / FastAPI)
-↓
-LLM Orchestrator
-↓
-Response Parser + Analyzer
-↓
-Report Generator
-
+Traditional SEO   →   "Rank on Google"
+AEO               →   "Be mentioned by AI"  🤯
 ```
+
+It sends queries to multiple LLMs, parses their responses, extracts brand mentions and rankings, detects competitors, and delivers clean, structured reports — all through a slick React frontend.
 
 ---
 
-## 📂 Project Structure
+## 🗂️ Project Structure
 
 ```
-
-pixiiAI/
+AEO-project/
 │
-├── aeo-backend/
-│   ├── main.py                # API entry point
-│   ├── llm_orchestrator.py   # Calls multiple LLMs
-│   ├── query_generator.py    # Generates prompts
-│   ├── response_parser.py    # Extracts insights
-│   ├── report_builder.py     # Builds final output
-│   ├── requirements.txt
-│   └── .env
+├── 🐍 aeo-backend/          # Python + FastAPI powerhouse
+│   ├── main.py              # 🚪 API entry point
+│   ├── llm_orchestrator.py  # 🎭 Calls multiple LLMs
+│   ├── query_generator.py   # 🧠 Crafts smart prompts
+│   ├── response_parser.py   # 🔍 Extracts brand signals
+│   ├── report_builder.py    # 📊 Builds final reports
+│   ├── requirements.txt     # 📦 Python deps
+│   └── .env                 # 🔑 API keys (keep secret!)
 │
-├── aeo-frontend/
+├── ⚛️  aeo-frontend/         # React + Vite magic
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── InputForm.jsx
-│   │   │   └── ReportCard.jsx
-│   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   │   ├── InputForm.jsx    # 📝 Query input UI
+│   │   │   └── ReportCard.jsx   # 📋 Results display
+│   │   ├── App.jsx              # 🏠 Root component
+│   │   └── main.jsx             # 🚀 Entry point
 │   ├── index.html
 │   └── package.json
 │
-└── README.md
-
-````
-
----
-
-## 🧠 Core Features
-
-### 🔍 Multi-LLM Querying
-- Sends queries to multiple LLMs (e.g., Groq, OpenAI, etc.)
-- Ensures diverse response sampling
-
-### 📊 Brand Visibility Analysis
-- Counts brand mentions
-- Computes visibility score across engines
-
-### 🏆 Ranking System
-- Determines position of brand in responses
-
-### ⚔️ Competitor Detection
-- Extracts competing brand names automatically
-
-### 📄 Report Generation
-- Structured insights for decision-making
+├── .gitignore
+└── README.md                # 👋 You are here!
+```
 
 ---
 
-## ⚙️ Tech Stack
+## ✨ Features
 
-### Frontend
-- React
-- Vite
-- Tailwind CSS
+| Feature | Description |
+|---|---|
+| 🔍 **Multi-LLM Querying** | Fires your query at multiple AI engines simultaneously |
+| 📊 **Brand Visibility Score** | Quantifies how prominently your brand appears |
+| 🏆 **Ranking Detection** | Finds where your brand sits in the pecking order |
+| ⚔️ **Competitor Identification** | Automatically spots rival brands in responses |
+| 📄 **Structured Reports** | Clean JSON + UI reports ready for decision-making |
+| ⚡ **FastAPI Backend** | Blazing-fast async Python API |
+| 🎨 **React Frontend** | Smooth, modern UI to interact with all that data |
 
-### Backend
-- Python
-- FastAPI
-- Regex + NLP parsing
+---
 
-### AI/LLM
-- Multi-LLM orchestration
-- Prompt engineering
+## 🛠️ Tech Stack
+
+### 🐍 Backend
+- **Python** — core language (63% of codebase!)
+- **FastAPI** — async REST API framework
+- **Uvicorn** — lightning-fast ASGI server
+- **NLP / Regex parsing** — response analysis engine
+- **Multi-LLM orchestration** — Groq, OpenAI, etc.
+
+### ⚛️ Frontend
+- **React** — component-based UI
+- **Vite** — next-gen build tooling
+- **JavaScript** — 35% of codebase
+- **Tailwind CSS** — clean, utility-first styling
 
 ---
 
 ## 🚀 Getting Started
 
-### 1️⃣ Clone the repo
-```bash
-git clone https://github.com/Kunal-imsec/AEO-project.git
-cd AEO-project
-````
+### Prerequisites
+
+Make sure you have these installed:
+- 🐍 Python 3.9+
+- 📦 Node.js 18+
+- 🔑 API keys for your chosen LLMs (Groq / OpenAI)
 
 ---
 
-### 2️⃣ Backend Setup
+### 1️⃣ Clone the repo
+
+```bash
+git clone https://github.com/Kunal-imsec/AEO-project.git
+cd AEO-project
+```
+
+---
+
+### 2️⃣ Set up the Backend
 
 ```bash
 cd aeo-backend
 pip install -r requirements.txt
 ```
 
-Create `.env`:
+Create your `.env` file:
 
-```
-GROQ_API_KEY=your_key
-OPENAI_API_KEY=your_key
+```env
+GROQ_API_KEY=your_groq_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-Run backend:
+Start the server:
 
 ```bash
 uvicorn main:app --reload
 ```
 
+> 🟢 Backend will be live at `http://localhost:8000`
+
 ---
 
-### 3️⃣ Frontend Setup
+### 3️⃣ Set up the Frontend
 
 ```bash
-cd aeo-frontend
+cd ../aeo-frontend
 npm install
 npm run dev
 ```
 
+> 🎨 Frontend will be live at `http://localhost:5173`
+
 ---
 
-## 🔄 Workflow
+## 🔄 How It Works
 
-1. User enters a query (e.g., "best laptop brands")
-2. Backend sends query to multiple LLMs
-3. Responses are collected
-4. Parser extracts:
-
-   * Brand mentions
-   * Rankings
-   * Competitors
-5. Report is generated and shown on UI
+```
+ You type a query
+       │
+       ▼
+  ┌─────────────┐
+  │  React UI   │  ← InputForm.jsx
+  └──────┬──────┘
+         │ HTTP POST
+         ▼
+  ┌─────────────────┐
+  │   FastAPI App   │  ← main.py
+  └──────┬──────────┘
+         │
+         ▼
+  ┌───────────────────────┐
+  │   LLM Orchestrator    │  ← Sends to GPT, Groq, etc.
+  └──────────┬────────────┘
+             │ raw responses
+             ▼
+  ┌───────────────────────┐
+  │   Response Parser     │  ← Extracts brand signals
+  └──────────┬────────────┘
+             │ structured data
+             ▼
+  ┌───────────────────────┐
+  │   Report Builder      │  ← Compiles final insights
+  └──────────┬────────────┘
+             │ JSON report
+             ▼
+  ┌─────────────┐
+  │  React UI   │  ← ReportCard.jsx displays results
+  └─────────────┘
+```
 
 ---
 
@@ -189,10 +187,19 @@ npm run dev
 
 ```json
 {
-  "brand": "Apple",
-  "mention_count": 8,
-  "average_rank": 2.1,
-  "competitors": ["Dell", "HP", "Lenovo"]
+  "query": "best cloud storage providers",
+  "brand": "Dropbox",
+  "mention_count": 6,
+  "average_rank": 3.2,
+  "visibility_score": 78.4,
+  "competitors_detected": [
+    "Google Drive",
+    "OneDrive",
+    "iCloud",
+    "Box"
+  ],
+  "llms_queried": ["gpt-4o", "llama3-70b"],
+  "timestamp": "2026-05-03T10:32:00Z"
 }
 ```
 
@@ -200,78 +207,66 @@ npm run dev
 
 ## 🎯 Use Cases
 
-* 📈 Brand visibility tracking in AI
-* 🧑‍💼 Enterprise decision-making
-* 🏛️ Policy & governance insights (IAS-level tools)
-* 📢 Marketing optimization for AI search
+- 🏢 **Brand managers** — track AI presence across LLMs
+- 📣 **Marketing teams** — optimize content for AI answer engines
+- 🔬 **Researchers** — study how LLMs represent brand data
+- 🧑‍💼 **Consultants** — generate AEO audit reports for clients
+- 🎓 **Students** — learn full-stack AI app development
 
 ---
 
-## 🧪 Future Improvements
+## 🗺️ Roadmap
 
-* Real-time LLM streaming
-* Dashboard analytics
-* Historical trend tracking
-* AI explainability layer
-* RAG integration for custom datasets
+- [x] Multi-LLM query orchestration
+- [x] Brand mention extraction
+- [x] Competitor detection
+- [x] React frontend with report display
+- [ ] 📈 Real-time streaming responses
+- [ ] 📅 Historical trend tracking
+- [ ] 🗺️ Dashboard with charts & analytics
+- [ ] 🔗 RAG integration for custom brand datasets
+- [ ] 🐳 Docker Compose deployment
+- [ ] 🔒 User authentication & saved reports
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
+Contributions are super welcome! 🎉
 
 ```bash
-git checkout -b feature/your-feature
-git commit -m "add feature"
-git push origin feature/your-feature
+# Fork the repo, then:
+git checkout -b feature/your-amazing-feature
+git commit -m "✨ add: your amazing feature"
+git push origin feature/your-amazing-feature
+# Open a Pull Request!
 ```
+
+Please keep commits clean and descriptive. 💅
 
 ---
 
 ## 📜 License
 
-MIT License
+This project is licensed under the **MIT License** — use it, fork it, build on it. 🚀
 
 ---
 
 ## 👨‍💻 Author
 
-**Kunal Agrawal**
+<div align="center">
 
-* BTech CSE (2023–2027)
-* AI/ML + Full Stack Developer
+**Kunal** · [@Kunal-imsec](https://github.com/Kunal-imsec)
 
----
-
-## ⭐ If you like this project
-
-Give it a star ⭐ — it helps a lot!
-
-```
+*Building tools for the AI-first world* 🌍
 
 ---
 
-# 🔥 Honest Feedback (Important)
+⭐ **If this project helped you, drop a star!** ⭐
 
-Your project idea is actually **very strong**:
-- This is basically **AEO analytics (next-gen SEO)**  
-- Very few students are building this → **good differentiation**
+*It takes 2 seconds and makes my day* ☀️
 
-BUT:
-- Right now it looks like a *tool*, not a *product*
-- To impress professors / recruiters → you need:
-  - dashboard visuals
-  - metrics comparison across LLMs
-  - real-world dataset / use case
-
----
-
-# 🚀 If you want next step
-I can upgrade this into:
-- :contentReference[oaicite:2]{index=2}
-- :contentReference[oaicite:3]{index=3}
-- :contentReference[oaicite:4]{index=4}
+</div>
 
 Just say: **“make it top 1% project”**
 ::contentReference[oaicite:1]{index=1}
