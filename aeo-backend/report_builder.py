@@ -28,7 +28,7 @@ def _grade(score: float) -> str:
     return "F"
 
 
-def _tip(rank: str, category: str = "product") -> str:
+def _tip(rank: str, category: str = "product", top_competitor: str = "") -> str:
     """Generate an actionable tip string based on visibility rank."""
     if rank == "low":
         return (
@@ -37,6 +37,11 @@ def _tip(rank: str, category: str = "product") -> str:
     if rank == "medium":
         return "Mentioned sometimes — optimize your product description"
     # rank == "high"
+    if top_competitor:
+        return (
+            f"Strong visibility! But {top_competitor} is also frequently "
+            f"recommended — highlight what makes you unique."
+        )
     return "Strong AI visibility — maintain your listing quality"
 
 
@@ -109,13 +114,15 @@ def build_report(
         data = parsed.get(engine, {})
         rate = data.get("mention_rate", 0.0)
         rank = data.get("rank", "low")
+        competitors = data.get("competitors", [])
+        top_competitor = competitors[0] if competitors else ""
         mention_rates.append(rate)
 
         engines_out[engine] = {
             "mention_rate": rate,
             "rank": rank,
-            "tip": _tip(rank, category_hint),
-            "competitors": data.get("competitors", []),
+            "tip": _tip(rank, category_hint, top_competitor),
+            "competitors": competitors,
         }
 
     # Overall score: average mention_rate × 100
@@ -123,21 +130,22 @@ def build_report(
         (sum(mention_rates) / len(mention_rates)) * 100, 2
     )
 
-    # Count how many engines rank "medium" or "high" (i.e., visible)
-    recognized_count = sum(
-        1 for e in engines_out.values() if e["rank"] in ("medium", "high")
+    # Count only "high"-rank engines as "strongly recognized"
+    strong_count = sum(
+        1 for e in engines_out.values() if e["rank"] == "high"
     )
 
     return {
         "product": product_name,
         "brand": brand_name,
+        "category": category or product_name,
         "overall_score": overall_score,
         "grade": _grade(overall_score),
         "queries_used": queries,
         "engines": engines_out,
         "top_competitors": _unique_competitors(parsed),
         "summary": (
-            f"Your brand is recognized by {recognized_count} out of 3 AI engines"
+            f"Your brand is strongly recognized by {strong_count} out of 3 AI engines"
         ),
     }
 

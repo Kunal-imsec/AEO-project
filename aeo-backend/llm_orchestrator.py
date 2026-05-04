@@ -108,14 +108,20 @@ async def query_claude(queries: list[str]) -> list[str]:
 
 async def query_gemini(queries: list[str]) -> list[str]:
     """
-    Send each query to gemini-2.0-flash via the modern google-genai SDK.
+    Send each query to gemini-2.5-flash via the modern google-genai SDK.
     Reads GOOGLE_API_KEY from the environment.
     Uses native async client — no executor needed.
+
+    Rate-limit protection:
+      • 2-second delay before every call to stay within free-tier QPM.
+      • On a 429 error, waits 10 seconds then retries once.
     """
     try:
         client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
         async def _call(query: str) -> str:
+            # 2-second pre-call delay to avoid hitting rate limits
+            await asyncio.sleep(2)
             try:
                 response = await client.aio.models.generate_content(
                     model="models/gemini-2.5-flash",
@@ -123,7 +129,19 @@ async def query_gemini(queries: list[str]) -> list[str]:
                 )
                 return response.text.strip()
             except Exception as e:
-                return {"error": str(e)}
+                if "429" in str(e):
+                    # Rate-limited — wait and retry once
+                    await asyncio.sleep(10)
+                    try:
+                        response = await client.aio.models.generate_content(
+                            model="models/gemini-2.5-flash",
+                            contents=f"{_SYSTEM_PROMPT}\n\n{_user_prompt(query)}",
+                        )
+                        return response.text.strip()
+                    except Exception as retry_e:
+                        return {"error": str(retry_e)}
+                else:
+                    return {"error": str(e)}
 
         results = await asyncio.gather(*[_call(q) for q in queries])
         return list(results)

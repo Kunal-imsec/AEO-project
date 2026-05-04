@@ -91,7 +91,7 @@ async def analyze(body: AnalyzeRequest):
         for engine, resps in llm_responses.items():
             preview = resps[0] if resps else "(empty)"
             print(f"  [{engine}] first response preview: {str(preview)[:200]}")
-        parsed = parse_responses(llm_responses, body.brand_name)
+        parsed = parse_responses(llm_responses, body.brand_name, body.category)
 
         # Step 4 — build structured report
         print("[analyze] Building report…")

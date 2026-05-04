@@ -1,15 +1,59 @@
 """
 response_parser.py
 ------------------
-AEO Diagnostic Tool — Phase 3
+AEO Diagnostic Tool — Phase 3 (v2)
 
 Parses the raw LLM responses returned by query_all_llms() to calculate
-per-engine brand mention rates, visibility ranks, and a list of likely
-competitor brand names.
+per-engine brand mention rates, visibility ranks, a list of likely
+competitor brand names, and dynamic actionable tips.
+
+Key fix (v2):
+  - Category-aware brand matching replaces the old heuristic regex that
+    was surfacing common English adjectives ("Known", "Based", "Strong").
+  - Tips are now fully dynamic — personalised per rank and competitor list.
 """
 
 import re
 from collections import Counter
+
+
+# ---------------------------------------------------------------------------
+# Known brand lists, keyed by category
+# ---------------------------------------------------------------------------
+
+KNOWN_BRANDS: dict[str, list[str]] = {
+    "electronics": [
+        "Sony", "Samsung", "Apple", "Bose", "JBL", "Jabra",
+        "Sennheiser", "Anker", "Beats", "LG", "Philips",
+        "Skullcandy", "Bang & Olufsen", "1More", "Shure",
+    ],
+    "supplement": [
+        "Nature Made", "Garden of Life", "NOW Foods", "Thorne",
+        "Pure Encapsulations", "Solgar", "Life Extension",
+        "Jarrow", "Nordic Naturals", "Designs for Health",
+    ],
+    "skincare": [
+        "CeraVe", "Neutrogena", "La Roche-Posay", "Cetaphil",
+        "Olay", "The Ordinary", "Paula's Choice", "Aveeno",
+    ],
+    "default": [],
+}
+
+# Words that look capitalized but are never brand names — used only in the
+# fuzzy fallback path (when no category list matches).
+_FUZZY_STOPLIST: set[str] = {
+    "Strong", "Based", "Known", "These", "Their", "Which", "While",
+    "There", "About", "Great", "Good", "Best", "High", "With",
+    "When", "This", "That", "From", "Your", "Some", "Also",
+    "Here", "They", "Have", "More", "Most", "Many", "Very",
+    # pre-existing stop-words kept for safety
+    "Note", "Each", "Both", "However", "Overall", "Additionally", "Often",
+    "Pure", "Natural", "Available", "Provides", "Recommended", "Helps",
+    "Comes", "Amazon", "Other", "Another", "Third", "Second", "First",
+    "Options", "Option", "Products", "Product", "Brand", "Brands",
+    "Supplement", "Supplements", "Magnesium", "Vitamin", "Mineral",
+    "Formula", "Quality", "Value", "Dose", "Daily",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -29,57 +73,84 @@ def _safe_responses(responses: list) -> list[str]:
     return clean
 
 
-def _extract_competitors(responses: list[str], brand_name: str) -> list[str]:
+def _detect_category_key(category: str) -> str:
     """
-    Heuristic competitor extractor.
-
-    Looks for capitalized tokens (Title-Case words) that:
-      - appear 2+ times across all response text
-      - are longer than 4 characters
-      - are NOT the brand name (case-insensitive)
-      - are NOT common English stop-words / generic adjectives
-
-    Returns up to 3 candidates, ranked by frequency.
+    Map a free-text category string to one of the KNOWN_BRANDS keys.
+    Returns "default" when no known category matches.
     """
-    # Common words that start with a capital letter but aren't brand names
-    _STOPWORDS = {
-        "Here", "This", "These", "They", "Their", "There", "Some",
-        "Also", "Note", "When", "With", "From", "Each", "Both",
-        "However", "Overall", "Additionally", "While", "Often",
-        "Best", "Good", "Great", "High", "Pure", "Natural",
-        "Available", "Provides", "Recommended", "Helps", "Comes",
-        "Amazon", "Other", "Another", "Third", "Second", "First",
-        "Options", "Option", "Products", "Product", "Brand", "Brands",
-        "Supplement", "Supplements", "Magnesium", "Vitamin", "Mineral",
-        "Formula", "Quality", "Value", "Dose", "Daily",
-    }
+    cat = category.lower()
+    if any(kw in cat for kw in ("electronic", "earbud", "headphone")):
+        return "electronics"
+    if any(kw in cat for kw in ("supplement", "vitamin", "magnesium")):
+        return "supplement"
+    if any(kw in cat for kw in ("skin", "cream", "moisturizer")):
+        return "skincare"
+    return "default"
 
+
+def _extract_competitors(
+    responses: list[str],
+    brand_name: str,
+    category: str,
+) -> list[str]:
+    """
+    Category-aware competitor extractor.
+
+    Strategy
+    --------
+    • If a known brand list exists for the detected category, scan the
+      combined response text for each brand from that list and tally hits.
+    • Otherwise fall back to a conservative heuristic: capitalised words
+      longer than 5 characters that are not in the fuzzy stoplist.
+
+    Returns up to 3 competitor names (sorted by frequency), excluding the
+    user's own brand.
+    """
     brand_lower = brand_name.lower()
     combined_text = " ".join(responses)
+    cat_key = _detect_category_key(category)
+    brand_list = KNOWN_BRANDS[cat_key]
 
-    # Extract all Title-Case words (single token; multi-word handled below)
-    # We look for sequences of 1-3 consecutive capitalized words (e.g. "Nature Made")
-    pattern = re.compile(r'\b([A-Z][a-z]{3,})(?:\s+[A-Z][a-z]{2,}){0,2}\b')
+    # ------------------------------------------------------------------
+    # Path A — category list is available: exact string matching
+    # ------------------------------------------------------------------
+    if brand_list:
+        counts: Counter = Counter()
+        for brand in brand_list:
+            # Exclude the user's own brand and any brand whose name contains it
+            # e.g. brand_name="Realme" → also excludes "Realme Narzo 60 Pro"
+            if brand_lower in brand.lower() or brand.lower() in brand_lower:
+                continue
+            # Case-insensitive whole-phrase search
+            hits = len(re.findall(re.escape(brand), combined_text, re.IGNORECASE))
+            if hits > 0:
+                counts[brand] = hits
+        top = [name for name, _ in counts.most_common(3)]
+        return top
+
+    # ------------------------------------------------------------------
+    # Path B — no category list: conservative heuristic fallback
+    # Only accept tokens that are:
+    #   • capitalised
+    #   • longer than 5 characters
+    #   • not in the fuzzy stoplist
+    #   • not the user's brand
+    # ------------------------------------------------------------------
+    pattern = re.compile(r'\b([A-Z][a-zA-Z]{5,})\b')
     candidates: list[str] = []
 
     for match in pattern.finditer(combined_text):
-        token = match.group(0).strip()
-        # Skip if it matches the brand name
-        if token.lower() == brand_lower or brand_lower in token.lower():
+        token = match.group(0)
+        # Exclude any token that contains the brand name or is contained by it
+        if brand_lower in token.lower() or token.lower() in brand_lower:
             continue
-        # Skip generic stop-words (check each word in the phrase)
-        words = token.split()
-        if any(w in _STOPWORDS for w in words):
-            continue
-        # Minimum length guard on the full phrase
-        if len(token) <= 4:
+        if token in _FUZZY_STOPLIST:
             continue
         candidates.append(token)
 
-    # Rank by frequency and return top 3
     freq = Counter(candidates)
-    top = [name for name, count in freq.most_common() if count >= 2]
-    return top[:3]
+    top_fallback = [name for name, count in freq.most_common() if count >= 2]
+    return top_fallback[:3]
 
 
 def _rank(mention_rate: float) -> str:
@@ -90,11 +161,50 @@ def _rank(mention_rate: float) -> str:
     return "low"
 
 
+def _build_tip(rank: str, competitors: list[str], category: str) -> str:
+    """
+    Generate a dynamic, context-aware actionable tip.
+
+    Args:
+        rank:        "high" | "medium" | "low"
+        competitors: top competitors for this engine (may be empty)
+        category:    free-text product category string
+
+    Returns:
+        A single actionable tip string.
+    """
+    if rank == "high" and len(competitors) > 0:
+        return (
+            f"Strong visibility! But {competitors[0]} is also frequently "
+            f"recommended — highlight what makes you unique."
+        )
+    elif rank == "high" and len(competitors) == 0:
+        return (
+            "Excellent AI visibility with no dominant competitor — "
+            "keep your listing fresh and keyword-rich."
+        )
+    elif rank == "medium":
+        return (
+            f"Mentioned sometimes. Add more {category}-specific keywords "
+            f"and customer benefit language to your listing."
+        )
+    else:  # low
+        return (
+            f"Not recognized by this AI engine. Your listing likely lacks "
+            f"the terminology AI models associate with {category}. "
+            f"Add detailed specs and use-case descriptions."
+        )
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-def parse_responses(llm_responses: dict, brand_name: str) -> dict:
+def parse_responses(
+    llm_responses: dict,
+    brand_name: str,
+    category: str,
+) -> dict:
     """
     Parse brand visibility and competitor data from raw LLM response dicts.
 
@@ -104,6 +214,8 @@ def parse_responses(llm_responses: dict, brand_name: str) -> dict:
                        query_all_llms().
         brand_name:    The brand whose visibility is being measured
                        (e.g. "MagPure").
+        category:      Free-text product category (e.g. "magnesium supplement",
+                       "wireless earbuds", "face moisturizer").
 
     Returns:
         {
@@ -111,7 +223,8 @@ def parse_responses(llm_responses: dict, brand_name: str) -> dict:
                 "mention_count": int,       # how many of 5 responses mention brand
                 "mention_rate":  float,     # mention_count / 5
                 "rank":          str,       # "high" | "medium" | "low"
-                "competitors":   list[str]  # up to 3 competitor names
+                "competitors":   list[str], # up to 3 competitor names
+                "tip":           str,       # dynamic actionable tip
             },
             "claude":  { ... },
             "gemini":  { ... },
@@ -133,19 +246,23 @@ def parse_responses(llm_responses: dict, brand_name: str) -> dict:
         # survived error-filtering (keeps the rate stable against transient errors)
         total = 5
         mention_rate = round(mention_count / total, 4)
+        rank = _rank(mention_rate)
+        competitors = _extract_competitors(responses, brand_name, category)
+        tip = _build_tip(rank, competitors, category)
 
         result[engine] = {
             "mention_count": mention_count,
             "mention_rate": mention_rate,
-            "rank": _rank(mention_rate),
-            "competitors": _extract_competitors(responses, brand_name),
+            "rank": rank,
+            "competitors": competitors,
+            "tip": tip,
         }
 
     return result
 
 
 # ---------------------------------------------------------------------------
-# Quick smoke-test (run directly: python response_parser.py)
+# Quick smoke-test  (run directly: python response_parser.py)
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -173,6 +290,10 @@ if __name__ == "__main__":
         ],
     }
 
-    parsed = parse_responses(_SAMPLE_RESPONSES, brand_name="MagPure")
     import json
+    parsed = parse_responses(
+        _SAMPLE_RESPONSES,
+        brand_name="MagPure",
+        category="magnesium supplement",
+    )
     print(json.dumps(parsed, indent=2))

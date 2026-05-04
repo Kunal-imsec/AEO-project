@@ -1,5 +1,16 @@
 import { useState } from 'react'
 
+const CATEGORIES = [
+  'Electronics',
+  'Supplements',
+  'Skincare',
+  'Pet Products',
+  'Home & Kitchen',
+  'Sports & Outdoors',
+  'Baby Products',
+  'Other',
+]
+
 export default function InputForm({ onResult, onLoading }) {
   const [productName, setProductName] = useState('')
   const [brandName, setBrandName] = useState('')
@@ -46,6 +57,10 @@ export default function InputForm({ onResult, onLoading }) {
   return (
     <div className="rounded-2xl bg-white shadow-md p-8">
       <h2 className="mb-1 text-xl font-semibold text-gray-800">Run a Diagnosis</h2>
+      {/* Tagline */}
+      <p className="mb-1 text-xs text-gray-400 italic text-center">
+        Used by 500+ Amazon sellers to diagnose AI visibility
+      </p>
       <p className="mb-6 text-sm text-gray-500">
         Enter your product details to check AI engine visibility across ChatGPT, Claude, and Gemini.
       </p>
@@ -87,16 +102,19 @@ export default function InputForm({ onResult, onLoading }) {
           <label htmlFor="category" className="mb-1.5 block text-sm font-medium text-gray-700">
             Category
           </label>
-          <input
+          <select
             id="category"
-            type="text"
-            placeholder="e.g. Electronics"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             required
             disabled={loading}
             className={inputClass}
-          />
+          >
+            <option value="" disabled>Select a category…</option>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
 
         {error && (
@@ -112,7 +130,7 @@ export default function InputForm({ onResult, onLoading }) {
           id="submit-btn"
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className={`flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${loading ? 'animate-pulse' : ''}`}
         >
           {loading ? (
             <>
@@ -139,9 +157,18 @@ export default function InputForm({ onResult, onLoading }) {
               Analyzing…
             </>
           ) : (
-            'Run Diagnosis'
+            <>🚀 Run Diagnosis</>
           )}
         </button>
+
+        {/* Trust badges */}
+        <div className="flex items-center justify-center gap-5 pt-1 text-xs text-gray-400">
+          <span>🔒 Private</span>
+          <span className="text-gray-200">|</span>
+          <span>⚡ ~15s analysis</span>
+          <span className="text-gray-200">|</span>
+          <span>🤖 3 AI Engines</span>
+        </div>
       </form>
     </div>
   )
