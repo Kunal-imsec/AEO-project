@@ -42,7 +42,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-frontend-domain.com"],  # replace with actual frontend URL
+    allow_origins=["https://aeo-project-eight.vercel.app"],  # replace with actual frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
