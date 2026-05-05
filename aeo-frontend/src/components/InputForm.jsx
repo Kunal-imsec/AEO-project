@@ -12,6 +12,8 @@ const CATEGORIES = [
 ]
 
 export default function InputForm({ onResult, onLoading }) {
+  const API_URL = import.meta.env.VITE_API_URL
+
   const [productName, setProductName] = useState('')
   const [brandName, setBrandName] = useState('')
   const [category, setCategory] = useState('')
@@ -25,7 +27,7 @@ export default function InputForm({ onResult, onLoading }) {
     onLoading(true)
 
     try {
-      const res = await fetch('http://localhost:8000/analyze', {
+      const res = await fetch(`${API_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
